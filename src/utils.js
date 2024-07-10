@@ -12,7 +12,7 @@ admin.initializeApp({
   credential: admin.credential.cert({
     projectId: process.env.FCM_PROJECT_ID,
     clientEmail: process.env.FCM_CLIENT_EMAIL,
-    privateKey: process.env.FCM_PRIVATE_KEY,
+    privateKey: JSON.parse(process.env.FCM_PRIVATE_KEY),
   }),
   databaseURL: process.env.FCM_DATABASE_URL,
 });
