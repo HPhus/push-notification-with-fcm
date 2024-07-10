@@ -8,6 +8,11 @@ throwIfMissing(process.env, [
 ]);
 
 export default async ({ req, res, log, error }) => {
+if (req.method == "GET") { 
+  return res.json({ ok: true, message: 'Welcome to the FCM API' });
+}
+
+if(req.method == "POST") {
   try {
     throwIfMissing(req.body, ['deviceToken', 'message']);
     throwIfMissing(req.body.message, ['title', 'body']);
@@ -19,12 +24,11 @@ export default async ({ req, res, log, error }) => {
 
   try {
     const response = await sendPushNotification({
-      notification: {
+      data: {
         title: req.body.message.title,
         body: req.body.message.body,
       },
-      data: req.body.data ?? {},
-      token: req.body.deviceToken,
+      tokens: req.body.deviceToken,
     });
 
     log(`Successfully sent message: ${response}`);
@@ -34,4 +38,6 @@ export default async ({ req, res, log, error }) => {
     error(e);
     return res.json({ ok: false, error: 'Failed to send the message' }, 500);
   }
+}
+
 };
