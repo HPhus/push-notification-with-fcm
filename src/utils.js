@@ -41,7 +41,7 @@ export function throwIfMissing(obj, keys) {
  */
 export async function sendPushNotification(payload) {
   try {
-    return await admin.messaging().send(payload);
+    return await admin.messaging().sendMulticast(payload);
   } catch (e) {
     throw "error on messaging ";
   }
