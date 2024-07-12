@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import sdk from 'node-appwrite';
+import {Client,Databases} from 'node-appwrite';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
@@ -18,11 +18,11 @@ admin.initializeApp({
   databaseURL: process.env.FCM_DATABASE_URL,
 });
 
-const client = new sdk.Client()
+const client = new Client()
   .setEndpoint(process.env.APPWRITE_FUNCTION_PROJECT_ID)
   .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
   .setKey(process.env.APPWRITE_API_KEY);
-const databases = new sdk.Databases(client);
+const databases = new Databases(client);
 
 /**
  * Throws an error if any of the keys are missing from the object
