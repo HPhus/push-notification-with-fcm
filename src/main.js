@@ -1,4 +1,4 @@
-import { throwIfMissing, sendPushNotification } from './utils.js';
+import { throwIfMissing, sendPushNotification, readSensorData } from './utils.js';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
@@ -9,7 +9,8 @@ throwIfMissing(process.env, [
 
 export default async ({ req, res, log, error }) => {
 if (req.method == "GET") { 
-  return res.json({ ok: true, message: 'Welcome to the FCM API' });
+  await readAndSendNoti()
+  return res.json({message: 'Start testing the realtime read senor value and push notification function' });
 }
 
 if(req.method == "POST") {
