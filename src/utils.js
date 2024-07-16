@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import { Client } from "appwrite";
+import {Client,Databases} from 'node-appwrite';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
@@ -8,30 +8,57 @@ throwIfMissing(process.env, [
   'FCM_DATABASE_URL',
 ]);
 
+// initailze firebase app
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FCM_PROJECT_ID,
+    clientEmail: process.env.FCM_CLIENT_EMAIL,
+    privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  }),
+  databaseURL: process.env.FCM_DATABASE_URL,
+});
+
+const client = new Client()
+  .setEndpoint(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+  .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+  .setKey(process.env.APPWRITE_API_KEY);
+const databases = new Databases(client);
+
 export async function index(){
-  const app = admin.initializeApp({
-      credential: admin.credential.cert({
-          projectId: process.env.FCM_PROJECT_ID,
-          clientEmail: process.env.FCM_CLIENT_EMAIL,
-          privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, "\n"),
-      }),
-      databaseURL: process.env.FCM_DATABASE_URL,
-  });
+  try {
+    const buildingDatabaseID = process.env.BUILDING_DATABASE_ID;
+    const sensorCollectionID = process.env.SENSOR_COLLECTION_ID;
+    const userCollectionID = process.env.USERS_COLLECTION_ID;
+    const users = await databases.listDocuments(
+      buildingDatabaseID,
+      userCollectionID,
+      [sdk.Query.limit(100000), sdk.Query.offset(0)]
+    );
+    const deviceTokens = users.documents.map((document) => document.token);
 
-  const client = new Client()
-      .setEndpoint(process.env.APPWRITE_URL)
-      .setProject(process.env.APPWRITE_PROJECT_ID);
+    const promise = await databases.listDocuments(
+      buildingDatabaseID,
+      sensorCollectionID,
+      [sdk.Query.limit(100000), sdk.Query.offset(0)]
+    );
 
-  const channel =
-      "databases." +
-      process.env.APPWRITE_URL +
-      ".collections." +
-      process.env.SENSOR_COLLECTION_ID +
-      ".documents.*";
-  const realtime = client.subscribe(channel, (response) => {
-      // Callback will be executed on all account events.
-      console.log(response);
-  });
+    promise.documents.forEach(async (item) => {
+      if (item.value > 1000 && isMoreThan5MinutesAgo(item.lastNotification)) {
+        log('Sensor:' + item);
+        await sendPushNotification({
+          data: {
+            title: 'Cảnh báo cháy',
+            body:
+              'Thiết bị ' + item.name + ' đang ở mức độ cảnh báo cháy (1000)',
+            sensorId: item.$id,
+          },
+          tokens: deviceTokens,
+        });
+      }
+    });
+  } catch (e) {
+    log('Read sensor error:' + e);
+  }
 };
 
 /**
@@ -64,3 +91,16 @@ export async function sendPushNotification(payload) {
   }
 }
 
+function isMoreThan5MinutesAgo(dateString) {
+  if (!dateString) {
+    return true; 
+  }
+
+  const inputDate = new Date(dateString);
+  const currentDate = new Date();
+  const timeDifference = currentDate - inputDate;
+  const fiveMinutesInMilliseconds = 5 * 60 * 1000;
+
+  // So sánh sự chênh lệch với 5 phút
+  return timeDifference > fiveMinutesInMilliseconds;
+}
