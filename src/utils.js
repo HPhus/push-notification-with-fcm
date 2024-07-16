@@ -48,7 +48,7 @@ export async function sendPushNotification(payload) {
   }
 }
 
-function isMoreThan5MinutesAgo(dateString, currentDate) {
+export function isMoreThan5MinutesAgo(dateString, currentDate) {
   if (!dateString) {
     return true;
   }
