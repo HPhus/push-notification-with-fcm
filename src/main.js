@@ -1,30 +1,33 @@
 import { throwIfMissing, sendPushNotification, index,isMoreThan5MinutesAgo } from './utils.js';
+import { Client, Databases ,Query} from 'node-appwrite';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
   'FCM_PRIVATE_KEY',
   'FCM_CLIENT_EMAIL',
+  'APPWRITE_URL',
   'APPWRITE_FUNCTION_PROJECT_ID',
   'SENSOR_COLLECTION_ID',
   'USERS_COLLECTION_ID',
 ]);
-// initailze firebase app
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FCM_PROJECT_ID,
-    clientEmail: process.env.FCM_CLIENT_EMAIL,
-    privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  }),
-  databaseURL: process.env.FCM_DATABASE_URL,
-});
-
-const client = new Client()
-  .setEndpoint(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-  .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-  .setKey(process.env.APPWRITE_API_KEY);
-const databases = new Databases(client);
 
 export default async ({ req, res, log, error }) => {
+  // initailze firebase app
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FCM_PROJECT_ID,
+      clientEmail: process.env.FCM_CLIENT_EMAIL,
+      privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    }),
+    databaseURL: process.env.FCM_DATABASE_URL,
+  });
+
+  const client = new Client()
+    .setEndpoint(process.env.APPWRITE_URL)
+    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+    .setKey(process.env.APPWRITE_API_KEY);
+  const databases = new Databases(client);
+
   try {
     const buildingDatabaseID = process.env.BUILDING_DATABASE_ID;
     const sensorCollectionID = process.env.SENSOR_COLLECTION_ID;
