@@ -33,7 +33,7 @@ export async function index() {
     await databases.updateDocument(
       buildingDatabaseID,
       sensorCollectionID,
-      item.$id,
+      "6684fa610035fa60c6d5",
       {
         battery: parseFloat("50"),
       }
