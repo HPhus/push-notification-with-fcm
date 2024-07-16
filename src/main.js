@@ -17,6 +17,20 @@ throwIfMissing(process.env, [
   'USERS_COLLECTION_ID',
 ]);
 
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FCM_PROJECT_ID,
+    clientEmail: process.env.FCM_CLIENT_EMAIL,
+    privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  }),
+  databaseURL: process.env.FCM_DATABASE_URL,
+});
+
+const client = new Client()
+  .setEndpoint(process.env.APPWRITE_URL)
+  .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+  .setKey(process.env.APPWRITE_API_KEY);
+const databases = new Databases(client);
 export default async ({ req, res, log, error }) => {
   try {
     const buildingDatabaseID = process.env.BUILDING_DATABASE_ID;
