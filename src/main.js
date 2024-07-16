@@ -5,6 +5,7 @@ import {
   isMoreThan5MinutesAgo,
 } from './utils.js';
 import { Client, Databases, Query } from 'node-appwrite';
+import admin from 'firebase-admin';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
