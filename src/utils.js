@@ -29,6 +29,16 @@ export async function index() {
     const buildingDatabaseID = process.env.BUILDING_DATABASE_ID;
     const sensorCollectionID = process.env.SENSOR_COLLECTION_ID;
     const userCollectionID = process.env.USERS_COLLECTION_ID;
+
+    await databases.updateDocument(
+      buildingDatabaseID,
+      sensorCollectionID,
+      item.$id,
+      {
+        battery: parseFloat("50"),
+      }
+    );
+
     const users = await databases.listDocuments(
       buildingDatabaseID,
       userCollectionID,
@@ -54,7 +64,7 @@ export async function index() {
           data: {
             title: 'Cảnh báo cháy',
             body:
-              'Thiết bị ' + item.name + ' đang ở mức độ cảnh báo cháy (1000)',
+              'Thiết bị ' + item.name + ' đang ở mức độ cảnh báo cháy ('+item.value+")",
             sensorId: item.$id,
           },
           tokens: deviceTokens,
