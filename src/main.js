@@ -1,7 +1,7 @@
 import {
   throwIfMissing,
   sendPushNotification,
-  readAndSendNoti,
+  index,
 } from './utils.js';
 
 throwIfMissing(process.env, [
