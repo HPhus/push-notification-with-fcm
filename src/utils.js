@@ -44,7 +44,7 @@ export async function index(){
 
     promise.documents.forEach(async (item) => {
       if (item.value > 1000 && isMoreThan5MinutesAgo(item.lastNotification)) {
-        console.log('Sensor:' + item);
+        context.log('Sensor:' + item);
         await sendPushNotification({
           data: {
             title: 'Cảnh báo cháy',
@@ -57,7 +57,7 @@ export async function index(){
       }
     });
   } catch (e) {
-    console.log('Read sensor error:' + e);
+    context.log('Read sensor error:' + e);
   }
 };
 
