@@ -29,41 +29,41 @@ export default async ({ req, res, log, error }) => {
       [Query.limit(100000), Query.offset(0)]
     );
     const deviceTokens = users.documents.map((document) => document.deviceToken);
+    log(deviceTokens);
+    // const promise = await databases.listDocuments(
+    //   buildingDatabaseID,
+    //   sensorCollectionID,
+    //   [Query.limit(100000), Query.offset(0)]
+    // );
 
-    const promise = await databases.listDocuments(
-      buildingDatabaseID,
-      sensorCollectionID,
-      [Query.limit(100000), Query.offset(0)]
-    );
+    // promise.documents.forEach(async (item) => {
+    //   const currentDate = new Date();
 
-    promise.documents.forEach(async (item) => {
-      const currentDate = new Date();
+    //   if (
+    //     item.value > 1000 &&
+    //     isMoreThan5MinutesAgo(item.lastNotification, currentDate)
+    //   ) {
+    //     // context.log('Sensor:' + item);
+    //     await sendPushNotification({
+    //       data: {
+    //         title: 'Cảnh báo cháy',
+    //         body:
+    //           'Thiết bị ' + item.name + ' đang ở mức độ cảnh báo cháy ('+item.value+")",
+    //         sensorId: item.$id,
+    //       },
+    //       tokens: deviceTokens,
+    //     });
 
-      if (
-        item.value > 1000 &&
-        isMoreThan5MinutesAgo(item.lastNotification, currentDate)
-      ) {
-        // context.log('Sensor:' + item);
-        await sendPushNotification({
-          data: {
-            title: 'Cảnh báo cháy',
-            body:
-              'Thiết bị ' + item.name + ' đang ở mức độ cảnh báo cháy ('+item.value+")",
-            sensorId: item.$id,
-          },
-          tokens: deviceTokens,
-        });
-
-        await databases.updateDocument(
-          buildingDatabaseID,
-          sensorCollectionID,
-          item.$id,
-          {
-            lastNotification: currentDate,
-          }
-        );
-      }
-    });
+    //     await databases.updateDocument(
+    //       buildingDatabaseID,
+    //       sensorCollectionID,
+    //       item.$id,
+    //       {
+    //         lastNotification: currentDate,
+    //       }
+    //     );
+    //   }
+    // });
   } catch (e) {
     log(e);
   }
