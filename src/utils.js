@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import {Client,Databases,Query} from 'node-appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
@@ -24,7 +24,7 @@ const client = new Client()
   .setKey(process.env.APPWRITE_API_KEY);
 const databases = new Databases(client);
 
-export async function index(){
+export async function index() {
   try {
     const buildingDatabaseID = process.env.BUILDING_DATABASE_ID;
     const sensorCollectionID = process.env.SENSOR_COLLECTION_ID;
@@ -43,7 +43,12 @@ export async function index(){
     );
 
     promise.documents.forEach(async (item) => {
-      if (item.value > 1000 && isMoreThan5MinutesAgo(item.lastNotification)) {
+      const currentDate = new Date();
+
+      if (
+        item.value > 1000 &&
+        isMoreThan5MinutesAgo(item.lastNotification, currentDate)
+      ) {
         context.log('Sensor:' + item);
         await sendPushNotification({
           data: {
@@ -54,12 +59,21 @@ export async function index(){
           },
           tokens: deviceTokens,
         });
+
+        await databases.updateDocument(
+          buildingDatabaseID,
+          sensorCollectionID,
+          item.$id,
+          {
+            lastNotification: currentDate,
+          }
+        );
       }
     });
   } catch (e) {
     context.log('Read sensor error:' + e);
   }
-};
+}
 
 /**
  * Throws an error if any of the keys are missing from the object
@@ -91,13 +105,13 @@ export async function sendPushNotification(payload) {
   }
 }
 
-function isMoreThan5MinutesAgo(dateString) {
+function isMoreThan5MinutesAgo(dateString, currentDate) {
   if (!dateString) {
-    return true; 
+    return true;
   }
 
   const inputDate = new Date(dateString);
-  const currentDate = new Date();
+
   const timeDifference = currentDate - inputDate;
   const fiveMinutesInMilliseconds = 5 * 60 * 1000;
 
