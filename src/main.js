@@ -43,8 +43,12 @@ export default async ({ req, res, log, error }) => {
   //     return res.json({ ok: false, error: 'Failed to send the message' }, 500);
   //   }
   // }
+  try {
+    await index();
+  } catch (e) {
+    log(e);
+  }
 
-  await index();
   return res.json({
     message:
       'Start testing the realtime read senor value and push notification function',
