@@ -49,7 +49,7 @@ export async function index() {
         item.value > 1000 &&
         isMoreThan5MinutesAgo(item.lastNotification, currentDate)
       ) {
-        context.log('Sensor:' + item);
+        // context.log('Sensor:' + item);
         await sendPushNotification({
           data: {
             title: 'Cảnh báo cháy',
@@ -71,7 +71,7 @@ export async function index() {
       }
     });
   } catch (e) {
-    context.log('Read sensor error:' + e);
+    // context.log('Read sensor error:' + e);
   }
 }
 
