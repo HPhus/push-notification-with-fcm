@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import { Client, Databases, Query } from 'node-appwrite';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
@@ -6,16 +7,6 @@ throwIfMissing(process.env, [
   'FCM_CLIENT_EMAIL',
   'FCM_DATABASE_URL',
 ]);
-
-// initailze firebase app
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FCM_PROJECT_ID,
-    clientEmail: process.env.FCM_CLIENT_EMAIL,
-    privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  }),
-  databaseURL: process.env.FCM_DATABASE_URL,
-});
 
 /**
  * Throws an error if any of the keys are missing from the object
@@ -43,6 +34,20 @@ export async function sendPushNotification(payload) {
   try {
     return await admin.messaging().sendMulticast(payload);
   } catch (e) {
-    throw "error on messaging ";
+    throw 'error on messaging ';
   }
+}
+
+export function isMoreThan5MinutesAgo(dateString, currentDate) {
+  if (!dateString) {
+    return true;
+  }
+
+  const inputDate = new Date(dateString);
+
+  const timeDifference = currentDate - inputDate;
+  const fiveMinutesInMilliseconds = 5 * 60 * 1000;
+
+  // So sánh sự chênh lệch với 5 phút
+  return timeDifference > fiveMinutesInMilliseconds;
 }

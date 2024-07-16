@@ -1,43 +1,95 @@
-import { throwIfMissing, sendPushNotification } from './utils.js';
+import {
+  throwIfMissing,
+  sendPushNotification,
+  isMoreThan5MinutesAgo,
+} from './utils.js';
+import { Client, Databases, Query } from 'node-appwrite';
+import admin from 'firebase-admin';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
   'FCM_PRIVATE_KEY',
   'FCM_CLIENT_EMAIL',
-  'FCM_DATABASE_URL',
+  'APPWRITE_URL',
+  'APPWRITE_FUNCTION_PROJECT_ID',
+  'SENSOR_COLLECTION_ID',
+  'USERS_COLLECTION_ID',
 ]);
 
+const buildingDatabaseID = process.env.BUILDING_DATABASE_ID;
+const sensorCollectionID = process.env.SENSOR_COLLECTION_ID;
+const userCollectionID = process.env.USERS_COLLECTION_ID;
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FCM_PROJECT_ID,
+    clientEmail: process.env.FCM_CLIENT_EMAIL,
+    privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  }),
+  databaseURL: process.env.FCM_DATABASE_URL,
+});
+
+const client = new Client()
+  .setEndpoint(process.env.APPWRITE_URL)
+  .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+  .setKey(process.env.APPWRITE_API_KEY);
+const databases = new Databases(client);
 export default async ({ req, res, log, error }) => {
-if (req.method == "GET") { 
-  return res.json({ ok: true, message: 'Welcome to the FCM API' });
-}
-
-if(req.method == "POST") {
   try {
-    throwIfMissing(req.body, ['deviceToken', 'message']);
-    throwIfMissing(req.body.message, ['title', 'body']);
-  } catch (err) {
-    return res.json({ ok: false, error: err.message }, 400);
-  }
+    const users = await databases.listDocuments(
+      buildingDatabaseID,
+      userCollectionID,
+      [Query.limit(100000), Query.offset(0)]
+    );
 
-  log(`Sending message to device: ${req.body.deviceToken}`);
+    const deviceTokens = users.documents
+      .map((document) => document.deviceToken)
+      .filter((token) => token !== null && token.trim() !== '');
 
-  try {
-    const response = await sendPushNotification({
-      data: {
-        title: req.body.message.title,
-        body: req.body.message.body,
-      },
-      tokens: req.body.deviceToken,
+    const promise = await databases.listDocuments(
+      buildingDatabaseID,
+      sensorCollectionID,
+      [Query.limit(100000), Query.offset(0)]
+    );
+
+    promise.documents.forEach(async (item) => {
+      const currentDate = new Date();
+      if (
+        item.value >= 1000 &&
+        isMoreThan5MinutesAgo(item.lastNotification, currentDate)
+      ) {
+        const sendResponse = await sendPushNotification({
+          data: {
+            title: 'Cảnh báo cháy',
+            body:
+              'Thiết bị ' +
+              item.name +
+              ' đang ở mức độ cảnh báo cháy (' +
+              item.value +
+              ')',
+            sensorId: item.$id,
+          },
+          tokens: deviceTokens,
+        });
+
+        log(`Successfully sent message: ${sendResponse}`);
+
+        const updateResponse = await databases.updateDocument(
+          buildingDatabaseID,
+          sensorCollectionID,
+          item.$id,
+          {
+            lastNotification: currentDate,
+          }
+        );
+      }
     });
-
-    log(`Successfully sent message: ${response}`);
-
-    return res.json({ ok: true, messageId: response });
   } catch (e) {
-    error(e);
-    return res.json({ ok: false, error: 'Failed to send the message' }, 500);
+    log(e);
   }
-}
 
+  return res.json({
+    message:
+      'Start testing the realtime read senor value and push notification function',
+  });
 };
