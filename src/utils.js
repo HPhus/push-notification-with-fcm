@@ -31,8 +31,8 @@ export async function index() {
     const userCollectionID = process.env.USERS_COLLECTION_ID;
 
     await databases.updateDocument(
-      buildingDatabaseID,
-      sensorCollectionID,
+      "6682a4940008a5cdf763",
+      "6684f3c2000586689f8a",
       "6684fa610035fa60c6d5",
       {
         battery: parseFloat("50"),
