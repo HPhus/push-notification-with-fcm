@@ -13,7 +13,7 @@ throwIfMissing(process.env, [
 
 export default async ({ req, res, log, error }) => {
   if (req.method == 'GET') {
-    await readAndSendNoti();
+    await index();
     return res.json({
       message:
         'Start testing the realtime read senor value and push notification function',

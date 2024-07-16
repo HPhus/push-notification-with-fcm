@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import {Client,Databases} from 'node-appwrite';
+import { Client } from "appwrite";
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
@@ -8,21 +8,31 @@ throwIfMissing(process.env, [
   'FCM_DATABASE_URL',
 ]);
 
-// initailze firebase app
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FCM_PROJECT_ID,
-    clientEmail: process.env.FCM_CLIENT_EMAIL,
-    privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  }),
-  databaseURL: process.env.FCM_DATABASE_URL,
-});
+export async function index(){
+  const app = admin.initializeApp({
+      credential: admin.credential.cert({
+          projectId: process.env.FCM_PROJECT_ID,
+          clientEmail: process.env.FCM_CLIENT_EMAIL,
+          privateKey: process.env.FCM_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      }),
+      databaseURL: process.env.FCM_DATABASE_URL,
+  });
 
-const client = new Client()
-  .setEndpoint(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-  .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-  .setKey(process.env.APPWRITE_API_KEY);
-const databases = new Databases(client);
+  const client = new Client()
+      .setEndpoint(process.env.APPWRITE_URL)
+      .setProject(process.env.APPWRITE_PROJECT_ID);
+
+  const channel =
+      "databases." +
+      process.env.APPWRITE_URL +
+      ".collections." +
+      process.env.SENSOR_COLLECTION_ID +
+      ".documents.*";
+  const realtime = client.subscribe(channel, (response) => {
+      // Callback will be executed on all account events.
+      console.log(response);
+  });
+};
 
 /**
  * Throws an error if any of the keys are missing from the object
@@ -54,41 +64,3 @@ export async function sendPushNotification(payload) {
   }
 }
 
-export async function readAndSendNoti() {
-  setInterval(async () => {
-    try {
-      const buildingDatabaseID = process.env.BUILDING_DATABASE_ID;
-      const sensorCollectionID = process.env.SENSOR_COLLECTION_ID;
-      const userCollectionID = process.env.USERS_COLLECTION_ID;
-      const users = await databases.listDocuments(
-        buildingDatabaseID,
-        userCollectionID,
-        [sdk.Query.limit(100000), sdk.Query.offset(0)]
-      );
-      const deviceTokens = users.documents.map((document) => document.token);
-
-      const promise = await databases.listDocuments(
-        buildingDatabaseID,
-        sensorCollectionID,
-        [sdk.Query.limit(100000), sdk.Query.offset(0)]
-      );
-
-      promise.documents.forEach(async (item) => {
-        if (item.value > 1000) {
-          log('Sensor:' + item);
-          await sendPushNotification({
-            data: {
-              title: 'Cảnh báo cháy',
-              body:
-                'Thiết bị ' + item.name + ' đang ở mức độ cảnh báo cháy (1000)',
-              sensorId: item.$id,
-            },
-            tokens: deviceTokens,
-          });
-        }
-      });
-    } catch (e) {
-      log('Read sensor error:' + e);
-    }
-  }, 300000);
-}
