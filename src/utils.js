@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import {Client,Databases} from 'node-appwrite';
+import {Client,Databases,Query} from 'node-appwrite';
 
 throwIfMissing(process.env, [
   'FCM_PROJECT_ID',
@@ -32,14 +32,14 @@ export async function index(){
     const users = await databases.listDocuments(
       buildingDatabaseID,
       userCollectionID,
-      [sdk.Query.limit(100000), sdk.Query.offset(0)]
+      [Query.limit(100000), Query.offset(0)]
     );
     const deviceTokens = users.documents.map((document) => document.token);
 
     const promise = await databases.listDocuments(
       buildingDatabaseID,
       sensorCollectionID,
-      [sdk.Query.limit(100000), sdk.Query.offset(0)]
+      [Query.limit(100000), Query.offset(0)]
     );
 
     promise.documents.forEach(async (item) => {
