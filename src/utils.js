@@ -34,7 +34,7 @@ export async function index() {
       userCollectionID,
       [Query.limit(100000), Query.offset(0)]
     );
-    const deviceTokens = users.documents.map((document) => document.token);
+    const deviceTokens = users.documents.map((document) => document.deviceToken);
 
     const promise = await databases.listDocuments(
       buildingDatabaseID,
