@@ -70,7 +70,7 @@ export default async ({ req, res, log, error }) => {
             "$id": item.$id,
             "name": item.name,
             "type": item.type,
-            // "value": item.value,
+            "value": item.value,
             // "status": item.status,
           },
           tokens: deviceTokens,
