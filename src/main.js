@@ -90,6 +90,6 @@ export default async ({ req, res, log, error }) => {
 
   return res.json({
     message:
-      'Start testing the realtime read senor value and push notification function',
+      'Start testing the realtime read senor value and push notification function - branch tesst',
   });
 };
