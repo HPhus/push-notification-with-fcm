@@ -69,7 +69,7 @@ export default async ({ req, res, log, error }) => {
               ')',
             "$id": item.$id,
             "name": item.name,
-            "type": item.type,
+            // "type": item.type,
             "value": String(item.value),
             // "status": item.status,
           },
