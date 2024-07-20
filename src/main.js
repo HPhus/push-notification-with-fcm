@@ -69,7 +69,8 @@ export default async ({ req, res, log, error }) => {
               ')',
             sensorId: item.$id,
             sensor:{
-              "id":item.$id,
+              // "id":item.$id,
+              name: item.name
             }
           },
           tokens: deviceTokens,
