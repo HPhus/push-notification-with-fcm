@@ -72,9 +72,9 @@ export default async ({ req, res, log, error }) => {
             // time: item.time,
             // timeTurnOn: item.timeTurnOn,
             // battery: item.battery,
-            type: item.type,
-            value: item.value,
-            status: item.status,
+            // type: item.type,
+            // value: item.value,
+            // status: item.status,
           },
           tokens: deviceTokens,
         });
