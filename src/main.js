@@ -67,7 +67,7 @@ export default async ({ req, res, log, error }) => {
               ' đang ở mức độ cảnh báo cháy (' +
               item.value +
               ')',
-            sensorId: item.$id,
+            "$id": item.$id,
             name: item.name,
           },
           tokens: deviceTokens,
