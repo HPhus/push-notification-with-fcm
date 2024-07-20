@@ -67,11 +67,14 @@ export default async ({ req, res, log, error }) => {
               ' đang ở mức độ cảnh báo cháy (' +
               item.value +
               ')',
-            "$id": item.$id,
-            "name": item.name,
-            "type": item.type,
+            "$id": String(item.$id),
+            "name": String(item.name),
+            "time": String(item.time),
+            "timeTurnOn": String(item.timeTurnOn),
+            "battery": String(item.battery),
+            "type": String(item.type),
             "value": String(item.value),
-            // "status": item.status,
+            "status": String(item.status),
           },
         tokens: deviceTokens,
         });
