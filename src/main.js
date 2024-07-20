@@ -61,20 +61,15 @@ export default async ({ req, res, log, error }) => {
         const sendResponse = await sendPushNotification({
           data: {
             title: 'Cảnh báo cháy',
-            body:{
-              "content": 'Thiết bị ' +
+            body:
+              'Thiết bị ' +
               item.name +
               ' đang ở mức độ cảnh báo cháy (' +
               item.value +
               ')',
-              "value": item.value,
-            },
             "$id": item.$id,
             "name": item.name,
-            // "time": item.time,
-            // "timeTurnOn": item.timeTurnOn,
-            // "battery": item.battery,
-            // "type": item.type,
+            "type": item.type,
             // "value": item.value,
             // "status": item.status,
           },
